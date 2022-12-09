@@ -1,0 +1,36 @@
+
+version: '3.4'
+
+services:
+  l2:
+    image: ethereumoptimism/reference-optimistic-geth:optimism-history
+    ports:
+      - "18545:8545"
+#      - "8546:8546"
+    volumes:
+      - "./beta-1_l2_data:/db"
+      - ./genesis.json:/genesis.json
+      - ./jwt-secret.txt:/jwt-secret.txt
+      - ./entrypoint.sh:/entrypoint.sh
+    entrypoint:
+      - "/bin/sh"
+      - "/entrypoint.sh"
+      - "--authrpc.jwtsecret=/jwt-secret.txt"
+
+  op-node:
+    depends_on:
+      - l2
+    image: us-central1-docker.pkg.dev/bedrock-goerli-development/images/op-node:v0.1.0-beta.1
+    command: op-node
+#    ports:
+#      - "9545:8545"
+#      - "6300:6666"
+#      - "7300:7300"
+    env_file:
+      - ./op-node.env
+    volumes:
+      - ./jwt-secret.txt:/config/jwt-secret.txt
+      - ./rollup.json:/config/rollup.json
+      - ./p2p-node-key.txt:/config/p2p-node-key.txt
+      - ./beta-1_op_log:/op_log
+    
